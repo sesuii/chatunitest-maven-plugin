@@ -29,7 +29,7 @@ public class ClassRunner extends AbstractRunner {
     }
 
     public void start() throws IOException {
-        if (Config.enableMultithreading == true) {
+        if (Config.enableMultithreading) {
             methodJob();
         } else {
             for (String mSig : classInfo.methodSignatures.keySet()) {
@@ -61,11 +61,7 @@ public class ClassRunner extends AbstractRunner {
             futures.add(future);
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                executor.shutdownNow();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdownNow));
 
         for (Future<String> future : futures) {
             try {
@@ -190,14 +186,14 @@ public class ClassRunner extends AbstractRunner {
             basicInfo += constructors + "\n";
         }
 
-        String briefDepMethods = "";
+        StringBuilder briefDepMethods = new StringBuilder();
         for (String sig : depMethods) {
             //TODO: identify used fields in dependent class
             MethodInfo depMethodInfo = getMethodInfo(depClassInfo, sig);
             if (depMethodInfo == null) {
                 continue;
             }
-            briefDepMethods += depMethodInfo.brief + "\n";
+            briefDepMethods.append(depMethodInfo.brief).append("\n");
         }
         String getterSetter = joinLines(depClassInfo.getterSetters) + "\n";
         methodDeps.put(depClassName, basicInfo + getterSetter + briefDepMethods + "}");

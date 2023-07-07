@@ -80,8 +80,7 @@ public class ClassParser {
                 combinedTypeSolver.add(new JavaParserTypeSolver(src));
             }
         }
-        JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
-        return symbolSolver;
+        return new JavaSymbolSolver(combinedTypeSolver);
     }
 
     private static void walkDep(DependencyNode node, Set<DependencyNode> depSet) {

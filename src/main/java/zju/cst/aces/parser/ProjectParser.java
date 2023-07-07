@@ -83,7 +83,7 @@ public class ProjectParser {
         }
     }
 
-    public static void scanSourceDirectory(File directory, List<String> classPaths) {
+    public void scanSourceDirectory(File directory, List<String> classPaths) {
         if (directory.isDirectory()) {
             File[] files = directory.listFiles();
             if (files != null) {

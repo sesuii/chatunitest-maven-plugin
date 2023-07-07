@@ -21,26 +21,19 @@ public class MethodRunner extends ClassRunner {
 
     @Override
     public void start() throws IOException {
-        if (Config.stopWhenSuccess == false && Config.enableMultithreading == true) {
+        if (!Config.stopWhenSuccess && Config.enableMultithreading) {
             ExecutorService executor = Executors.newFixedThreadPool(Config.testNumber);
             List<Future<String>> futures = new ArrayList<>();
             for (int num = 1; num <= Config.testNumber; num++) {
                 int finalNum = num;
-                Callable<String> callable = new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        startRounds(finalNum);
-                        return "";
-                    }
+                Callable<String> callable = () -> {
+                    startRounds(finalNum);
+                    return "";
                 };
                 Future<String> future = executor.submit(callable);
                 futures.add(future);
             }
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    executor.shutdownNow();
-                }
-            });
+            Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdownNow));
 
             for (Future<String> future : futures) {
                 try {
