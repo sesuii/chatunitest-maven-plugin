@@ -63,13 +63,12 @@ public class AbstractRunner extends ProjectTestMojo {
                 }
             }
         } else {
-            int promptTokens = TokenCounter.countToken(promptInfo.unitTest)
-                    + TokenCounter.countToken(promptInfo.methodSignature)
-                    + TokenCounter.countToken(promptInfo.className)
-                    + TokenCounter.countToken(promptInfo.info);
-            ErrorProcesser errorProcesser = new ErrorProcesser();
+            int promptTokens = TokenCounter.countMessageTokens(promptInfo.unitTest)
+                    + TokenCounter.countMessageTokens(promptInfo.methodSignature)
+                    + TokenCounter.countMessageTokens(promptInfo.className)
+                    + TokenCounter.countMessageTokens(promptInfo.info);
             int allowedTokens = Math.max(Config.maxPromptTokens - promptTokens, Config.minErrorTokens);
-            String processedErrorMsg = errorProcesser.processErrorMessage(promptInfo.errorMsg, allowedTokens);
+            String processedErrorMsg = ErrorProcesser.processErrorMessage(promptInfo.errorMsg, allowedTokens);
             log.debug("Allowed tokens: " + allowedTokens);
             log.debug("Processed error message: \n" + processedErrorMsg);
 

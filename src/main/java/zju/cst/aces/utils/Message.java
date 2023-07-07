@@ -2,6 +2,7 @@ package zju.cst.aces.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import zju.cst.aces.constant.RoleEnum;
 
 @Data
 @AllArgsConstructor
@@ -20,28 +21,17 @@ public class Message {
 
     public static Message of(String content) {
 
-        return new Message(Message.Role.USER.getValue(), content);
+        return new Message(RoleEnum.USER.getValue(), content);
     }
 
     public static Message ofSystem(String content) {
 
-        return new Message(Role.SYSTEM.getValue(), content);
+        return new Message(RoleEnum.SYSTEM.getValue(), content);
     }
 
     public static Message ofAssistant(String content) {
 
-        return new Message(Role.ASSISTANT.getValue(), content);
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public enum Role {
-
-        SYSTEM("system"),
-        USER("user"),
-        ASSISTANT("assistant"),
-        ;
-        private String value;
+        return new Message(RoleEnum.ASSISTANT.getValue(), content);
     }
 
 }

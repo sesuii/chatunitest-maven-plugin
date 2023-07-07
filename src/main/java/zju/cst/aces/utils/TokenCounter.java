@@ -3,25 +3,41 @@ package zju.cst.aces.utils;
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.knuddels.jtokkit.api.EncodingRegistry;
-import com.knuddels.jtokkit.api.ModelType;
+import zju.cst.aces.constant.ChatGPTConsant;
+
+import java.util.List;
 
 /**
- * @Author volunze
- * @Date 2023/6/26 1:20
- * @ClassName: CountToken
- * @Description: count the number of tokens for openai models
- * @Version 1.0
- */
+ * estimate the consumption of GPT tokens.
+ *
+ * @author <a href="mailto: sjiahui27@gmail.com">songjiahui</a>
+ * @since 2023/7/6 17:03
+ **/
 public class TokenCounter {
 
-    public TokenCounter() {
+    private static final EncodingRegistry REGISTRY = Encodings.newDefaultEncodingRegistry();
+
+    public static int countMessageTokens(Message message) {
+        Encoding encoding = REGISTRY.getEncodingForModel(ChatGPTConsant.DEFAULT_GPT_MODEL).orElseThrow();
+        int tokensSum = 0;
+        tokensSum += ChatGPTConsant.DEFAULT_TOKENS_PER_MESSAGE;
+        tokensSum += encoding.countTokens(message.getContent());
+        tokensSum += encoding.countTokens(message.getRole());
+        return tokensSum;
     }
 
-    public static int countToken(String error_message){
-        EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
-        // Get encoding for a specific model via string name
-        Encoding encoding = registry.getEncodingForModel(ModelType.GPT_3_5_TURBO);
-        int tokenCount = encoding.countTokens(error_message);
-        return tokenCount;
+    public static int countMessageTokens(List<Message> messages) {
+        int tokensSum = 0;
+        for (Message message : messages) {
+            tokensSum += countMessageTokens(message);
+        }
+        // every reply is primed with <|start|>assistant<|message|>
+        tokensSum += 3;
+        return tokensSum;
+    }
+
+    public static int countMessageTokens(String message) {
+        Encoding encoding = REGISTRY.getEncodingForModel(ChatGPTConsant.DEFAULT_GPT_MODEL).orElseThrow();
+        return encoding.countTokens(message);
     }
 }

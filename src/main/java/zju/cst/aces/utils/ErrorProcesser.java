@@ -14,14 +14,13 @@ import java.util.List;
  */
 public class ErrorProcesser {
     public static String processErrorMessage(List<String> msg, int allowedTokens) throws IOException {
-        if(allowedTokens<=0)
+        if(allowedTokens<=0) {
             return "";
-        ErrorParser errorParser = new ErrorParser();
-        TestMessage testMessage = errorParser.loadMessage(msg);
-        TokenCounter tokenCounter = new TokenCounter();
+        }
+        TestMessage testMessage = ErrorParser.loadMessage(msg);
         List<String> errors = testMessage.getErrorMessage();
         String errorMessage = String.join(" ",errors);
-        while(tokenCounter.countToken(errorMessage) > allowedTokens){
+        while(TokenCounter.countMessageTokens(errorMessage) > allowedTokens){
             if(errorMessage.length()>50){
                 errorMessage=errorMessage.substring(0,errorMessage.length()-50);
             }else{
