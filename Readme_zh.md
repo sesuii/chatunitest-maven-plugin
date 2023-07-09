@@ -2,6 +2,9 @@
 
 [English](./README.md) | [中文](./Readme_zh.md)
 
+## 更新
+💥 允许使用多线程更快地生成单元测试！
+
 ## 运行步骤
 
 ### 0. `pom.xml`文件配置
@@ -11,7 +14,7 @@
 <plugin>
     <groupId>io.github.ZJU-ACES-ISE</groupId>
     <artifactId>chatunitest-maven-plugin</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
     <configuration>
         <!-- Required: You must specify your OpenAI API keys. -->
         <apiKeys></apiKeys>
@@ -40,7 +43,6 @@
 - `frequencyPenalty`: (**可选**) OpenAI API参数，默认值： `0`
 - `presencePenalty`: (**可选**) OpenAI API参数，默认值： `0`
 - `proxy`: (**可选**)如果需要，填写您的主机名和端口号，示例：`127.0.0.1:7078`
-- `stopWhenSuccess`: (**可选**) 是否在生成一个成功的测试后停止，默认值：`true`
 
 一般情况下，您只需要提供API密钥。如果出现APIConnectionError，您可以在proxy参数中添加您的代理ip和端口号。Windows系统里下的代理ip和端口可以在设置->网络和Internet->代理中查看：
 
@@ -110,6 +112,7 @@ mvn chatunitest:class -DselectClass=className
 - `project`: (**可选**) 目标项目路径，默认值：`{basedir}`
 - `thread`: (**可选**) 开启或关闭多线程，默认值：`true`
 - `maxThread`: (**可选**) 最大线程数，默认值：`CPU核心数 * 10`
+- `stopWhenSuccess`: (**可选**) 是否在生成一个成功的测试后停止，默认值：`true`
 
 您也可以在pom.xml中设置插件配置，而不是使用`-D`选项，例如`<maxThreads>30</maxThreads>`
 

@@ -56,7 +56,8 @@ public class MethodRunner extends ClassRunner {
 
     public boolean startRounds(final int num) throws IOException {
         PromptInfo promptInfo = null;
-        String testName = className + separator + methodInfo.methodName + separator + num + separator + "Test";
+        String testName = className + separator + methodInfo.methodName + separator
+                + classInfo.methodSignatures.get(methodInfo.methodSignature) + separator + num + separator + "Test";
         log.info("\n==========================\n[ChatTester] Generating test for method < "
                 + methodInfo.methodName + " > number " + num + "...\n");
         for (int rounds = 1; rounds <= Config.maxRounds; rounds++) {
@@ -96,14 +97,11 @@ public class MethodRunner extends ClassRunner {
             exportTest(code, savePath);
 
             TestCompiler compiler = new TestCompiler();
-            File testFile = compiler.copyFileToTest(savePath.toFile());
-
-            if (compiler.compileAndExport(testFile,
+            if (compiler.compileAndExport(savePath.toFile(),
                     errorOutputPath.resolve(testName + "CompilationError_" + rounds + ".txt"), promptInfo)) {
                 log.info("Test for method < " + methodInfo.methodName + " > generated successfully");
                 return true;
             } else {
-                removeTestFile(testFile);
                 removeTestFile(savePath.toFile());
                 log.info("Test for method < " + methodInfo.methodName + " > generated failed");
             }
@@ -114,8 +112,8 @@ public class MethodRunner extends ClassRunner {
     /**
      * Remove the failed test file
      */
-    private void removeTestFile(File testFile) {
-        if (testFile.exists()) {
+    public static void removeTestFile(File testFile) {
+        if (testFile != null && testFile.exists()) {
             testFile.delete();
         }
     }

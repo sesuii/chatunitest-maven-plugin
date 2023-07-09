@@ -2,6 +2,9 @@
 
 [English](./README.md) | [中文](./Readme_zh.md)
 
+## Updates:
+💥 We have recently added a multithreading feature to generate tests more quickly!
+
 ## Steps to run
 
 ### 0. Add our plugin to `pom.xml` and config
@@ -13,7 +16,7 @@ You can configure the plugin with the following parameters to your `pom.xml` fil
 <plugin>
     <groupId>io.github.ZJU-ACES-ISE</groupId>
     <artifactId>chatunitest-maven-plugin</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
     <configuration>
         <!-- Required: You must specify your OpenAI API keys. -->
         <apiKeys></apiKeys>
@@ -41,8 +44,7 @@ You can configure the plugin with the following parameters to your `pom.xml` fil
 - `topP`: (**Optional**) The OpenAI API parameters. Default: `1`.
 - `frequencyPenalty`: (**Optional**) The OpenAI API parameters. Default: `0`.
 - `presencePenalty`: (**Optional**) The OpenAI API parameters. Default: `0`.
-- `proxy`: (**Optional**)Your host name and port number if you need. Example:`127.0.0.1:7078`.
-- `stopWhenSuccess`: (**Optional**) Stop the repair process when the test passes. Default: `true`.
+- `proxy`: (**Optional**) Your host name and port number if you need. Example:`127.0.0.1:7078`.
 
 Essentially, the only thing you need to provide are your API keys.
 
@@ -114,6 +116,7 @@ There are all parameters you can specify with the `-D` option:
 - `project`: (**Optional**) The target project path. Default: `{basedir}`.
 - `thread`: (**Optional**) Enable multi-threaded execution. Default: `true`.
 - `maxThread`: (**Optional**) The maximum number of threads. Default: `CPU cores * 10`.
+- `stopWhenSuccess`: (**Optional**) Stop the repair process when the test passes. Default: `true`. 
  
 You can also set the plugin configuration in pom.xml instead of using `-D` option like: `<maxThreads>30</maxThreads>`
 
