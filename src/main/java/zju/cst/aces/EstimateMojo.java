@@ -10,6 +10,6 @@ import zju.cst.aces.ProjectTestMojo;
  * @since 2023/7/7 18:14
  **/
 @Mojo(name = "estimate")
-public class EstimateMojo extends ProjectTestMojo {
+public class EstimateMojo {
 
 }

@@ -1,4 +1,4 @@
-package zju.cst.aces.utils;
+package zju.cst.aces.config;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;

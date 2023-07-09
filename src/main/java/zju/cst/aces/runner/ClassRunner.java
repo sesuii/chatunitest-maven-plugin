@@ -2,7 +2,7 @@ package zju.cst.aces.runner;
 
 import zju.cst.aces.parser.ClassParser;
 import zju.cst.aces.utils.ClassInfo;
-import zju.cst.aces.utils.Config;
+import zju.cst.aces.config.Config;
 import zju.cst.aces.utils.MethodInfo;
 import zju.cst.aces.utils.PromptInfo;
 

@@ -29,7 +29,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.ClassRunner;
-import zju.cst.aces.utils.Config;
+import zju.cst.aces.config.Config;
 import zju.cst.aces.utils.TestCompiler;
 
 import java.io.File;

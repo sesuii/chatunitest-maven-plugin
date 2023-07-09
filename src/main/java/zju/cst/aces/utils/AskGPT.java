@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import okhttp3.*;
 import zju.cst.aces.ProjectTestMojo;
+import zju.cst.aces.config.Config;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

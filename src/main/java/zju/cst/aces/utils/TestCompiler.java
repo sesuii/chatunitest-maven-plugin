@@ -2,6 +2,7 @@ package zju.cst.aces.utils;
 
 import org.codehaus.plexus.util.FileUtils;
 import zju.cst.aces.ProjectTestMojo;
+import zju.cst.aces.config.Config;
 import zju.cst.aces.runner.MethodRunner;
 
 import java.io.*;

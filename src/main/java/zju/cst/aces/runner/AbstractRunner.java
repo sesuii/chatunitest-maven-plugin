@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import okhttp3.Response;
 import zju.cst.aces.ProjectTestMojo;
+import zju.cst.aces.config.Config;
 import zju.cst.aces.utils.*;
 
 import java.io.FileOutputStream;
