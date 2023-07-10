@@ -42,12 +42,25 @@ public class MethodTestMojo
     @Parameter(property = "selectMethod", required = true)
     public String selectMethod;
 
+    public MethodTestMojo() {
+        super();
+    }
+
+    public MethodTestMojo(boolean isMavenDirect) {
+        super(isMavenDirect);
+    }
+
     /**
      * Generate test for target method in given class
      * @throws MojoExecutionException
      */
     public void execute() throws MojoExecutionException {
-        init();
+        if(isMavenDirect) {
+            init();
+        }
+        else {
+            // TODO: Init for Gradle
+        }
         String className = selectMethod.split("#")[0];
         String methodName = selectMethod.split("#")[1];
 

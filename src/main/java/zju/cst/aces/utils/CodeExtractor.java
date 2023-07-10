@@ -18,6 +18,12 @@ public class CodeExtractor {
         extractedCode = extract(code);
     }
 
+    /**
+     * extract the syntactically correct code from the GPT generated code.
+     *
+     * @param code GPT generated code
+     * @return
+     */
     public String extract(String code) {
         String extractedCode = "";
 
@@ -134,6 +140,12 @@ public class CodeExtractor {
         return extractedCode;
     }
 
+    /**
+     * Check if the code is syntactically correct.
+     *
+     * @param code The code to be checked.
+     * @return
+     */
     private static boolean isSyntacticCorrect(String code) {
         ParseResult<CompilationUnit> parseResult = java_parser.parse(code);
         if (parseResult.isSuccessful()) {

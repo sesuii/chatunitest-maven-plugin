@@ -16,17 +16,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class ProjectParser {
 
     private String srcFolderPath;
     private String outputPath;
     public Map<String, List<String>> classMap = new HashMap<>();
+
+    private boolean isTest;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     public ProjectParser(String src, String output) {
         setSrcFolderPath(src);
         setOutputPath(output);
+        isTest = output.contains("test-class-info");
     }
 
     /**
@@ -68,7 +73,13 @@ public class ProjectParser {
     }
 
     public void exportClassMap() {
-        Path classMapPath = Config.classMapPath;
+        Path classMapPath;
+        if(isTest) {
+            classMapPath = Config.testClassMapPath;
+        }
+        else {
+            classMapPath = Config.classMapPath;
+        }
         if (!Files.exists(classMapPath.getParent())) {
             try {
                 Files.createDirectories(classMapPath.getParent());
@@ -112,4 +123,5 @@ public class ProjectParser {
     public void setOutputPath(String output) {
         this.outputPath = output;
     }
+
 }

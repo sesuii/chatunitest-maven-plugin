@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 public class AbstractRunner extends ProjectTestMojo {
 
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     public static final String separator = "_";
     public static int testTimeOut = 8000;
@@ -143,7 +144,7 @@ public class AbstractRunner extends ProjectTestMojo {
         return extractCode(content);
     }
 
-    public void exportTest(String code, Path savePath) {
+    public static void exportTest(String code, Path savePath) {
         if (!savePath.toAbsolutePath().getParent().toFile().exists()) {
             savePath.toAbsolutePath().getParent().toFile().mkdirs();
         }

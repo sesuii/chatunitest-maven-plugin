@@ -23,4 +23,23 @@ public class ChatGPTConsant {
      */
     public static final int DEFAULT_TOKENS_PER_NAME = -1;
 
+    /**
+     * The default temperature for ChatGPT
+     */
+    public static final double DEFAULT_TEMPERATURE = 0.5;
+
+    /**
+     * The default top probability for ChatGPT
+     */
+    public static final int DEFAULT_TOP_PROBABILITY = 1;
+
+    /**
+     * The default frequency penalty for ChatGPT
+     */
+    public static final int DEFAULT_FREQUENCY_PENALTY = 0;
+
+    /**
+     * The default presence penalty for ChatGPT
+     */
+    public static final int DEFAULT_PRESENCE_PENALTY = 0;
 }

@@ -1,6 +1,7 @@
 package zju.cst.aces.runner;
 
 import okhttp3.Response;
+import org.apache.maven.plugins.annotations.Parameter;
 import zju.cst.aces.config.Config;
 import zju.cst.aces.dto.Message;
 import zju.cst.aces.dto.MethodInfo;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.*;
 
 public class MethodRunner extends ClassRunner {
@@ -84,8 +86,15 @@ public class MethodRunner extends ClassRunner {
                 log.info("Fixing test for method < " + methodInfo.methodName + " > round " + rounds + " ...");
             }
             List<Message> prompt = generateMessages(promptInfo);
-            log.debug("[Prompt]:\n" + prompt.toString());
-
+            int tokenCount = TokenCounter.countMessageTokens(prompt);
+            log.info("The estimated tokens in this round:" + tokenCount);
+            log.info("Do you want to continue? (Y/N)");
+            Scanner scanner = new Scanner(System.in);
+            String userInput = scanner.nextLine();
+            if(!"Y".equals(userInput)) {
+                log.info("Test for method < " + methodInfo.methodName + " > generated terminated by user.");
+                return true;
+            }
             AskGPT askGPT = new AskGPT();
             Response response = askGPT.askChatGPT(prompt);
             Path savePath = testOutputPath.resolve(classInfo.packageDeclaration

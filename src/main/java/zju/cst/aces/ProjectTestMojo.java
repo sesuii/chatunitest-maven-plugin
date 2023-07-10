@@ -68,9 +68,6 @@ public class ProjectTestMojo
     @Parameter(property = "maxThreads", defaultValue = "0")
     public int maxThreads;
 
-    /*
-     * Generate 5 tests for each method.
-     */
     @Parameter(name = "testNumber", defaultValue = "5")
     public int testNumber;
     @Parameter(name = "maxRounds", defaultValue = "6")
@@ -99,6 +96,19 @@ public class ProjectTestMojo
     public static Log log;
     public static int classThreads;
     public static int methodThreads;
+    protected boolean isMavenDirect;
+
+
+
+    public ProjectTestMojo() {
+        super();
+        this.isMavenDirect = true;
+    }
+
+    public ProjectTestMojo(boolean isMavenDirect) {
+        super();
+        this.isMavenDirect = isMavenDirect;
+    }
 
 
     /**
@@ -106,7 +116,12 @@ public class ProjectTestMojo
      * @throws MojoExecutionException
      */
     public void execute() throws MojoExecutionException {
-        init();
+        if(isMavenDirect) {
+            init();
+        }
+        else {
+            // TODO: Init for Gradle
+        }
         log.info("\n==========================\n[ChatTester] Generating tests for project " + project.getBasedir().getName() + " ...");
         log.warn("[ChatTester] It may consume a significant number of tokens!");
         // ANNO 判断项目根目录是否存在

@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.ClassRunner;
+import zju.cst.aces.utils.TestClassMerger;
 import zju.cst.aces.utils.TestCompiler;
 
 import java.io.File;
@@ -39,12 +40,28 @@ public class ClassTestMojo
     @Parameter(property = "selectClass", required = true)
     public String selectClass;
 
+    @Parameter(property = "mergeInOneClass", defaultValue = "false")
+    public boolean mergeInOneClass;
+
+    public ClassTestMojo() {
+        super();
+    }
+
+    public ClassTestMojo(boolean isMavenDirect) {
+        super(isMavenDirect);
+    }
+
     /**
      * Generate tests for target class
      * @throws MojoExecutionException
      */
     public void execute() throws MojoExecutionException {
-        init();
+        if(isMavenDirect) {
+            init();
+        }
+        else {
+            // TODO: Init for Gradle
+        }
         String className = selectClass;
         Path srcMainJavaPath = Paths.get(project.getBasedir().getAbsolutePath(), "src", "main", "java");
         if (!srcMainJavaPath.toFile().exists()) {
@@ -67,7 +84,16 @@ public class ClassTestMojo
             throw new RuntimeException("In ClassTestMojo.execute: " + e);
         }
 //        TestCompiler.restoreTestFolder();
-
+        boolean merged = false;
+        try {
+            TestClassMerger testClassMerger = new TestClassMerger(className);
+            merged = mergeInOneClass ? testClassMerger.mergeInOneClass() : testClassMerger.mergeWithSuite();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if(merged) {
+            log.info("\n==========================\n[ChatTester] Merged tests SUCCEEDED for class < " + className + " > ...");
+        }
         log.info("\n==========================\n[ChatTester] Generation finished");
     }
 }

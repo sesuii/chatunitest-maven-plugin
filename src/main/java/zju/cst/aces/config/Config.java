@@ -3,6 +3,8 @@ package zju.cst.aces.config;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import zju.cst.aces.constant.ChatGPTConsant;
+import zju.cst.aces.constant.ProjectConstant;
 
 import java.nio.file.Path;
 import java.util.Random;
@@ -14,26 +16,29 @@ public class Config {
     public static MavenSession session;
     public static MavenProject project;
     public static DependencyGraphBuilder dependencyGraphBuilder;
-    public static boolean stopWhenSuccess;
-    public static boolean enableMultithreading;
-    public static int maxThreads;
-    public static int testNumber;
+    public static boolean stopWhenSuccess = ProjectConstant.DEFAULT_STOP_WHEN_SUCCESS;
+    public static boolean enableMultithreading = ProjectConstant.DEFAULT_ENABLE_MULTI_THREADING;
+    public static int maxThreads = ProjectConstant.DEFAULT_MAX_THREADS;
+    public static int testNumber = ProjectConstant.DEFAULT_TEST_NUMBER;
     public static int timeOut;
     public static int processNumber;
     public static String resultDir;
     public static String projectDir;
-    public static int maxRounds;
-    public static int maxPromptTokens;
-    public static int minErrorTokens;
-    public static String model;
-    public static Double temperature;
-    public static int topP;
-    public static int frequencyPenalty;
-    public static int presencePenalty;
+    public static int maxRounds = ProjectConstant.DEFAULT_MAX_ROUNDS;
+    public static int maxPromptTokens = ProjectConstant.DEFAULT_MAX_PROMPT_TOKENS;
+    public static int minErrorTokens = ProjectConstant.DEFAULT_MIN_ERROR_TOKENS;
+
+    public static String model = ChatGPTConsant.DEFAULT_GPT_MODEL;
+    public static Double temperature = ChatGPTConsant.DEFAULT_TEMPERATURE;
+    public static int topP = ChatGPTConsant.DEFAULT_TOP_PROBABILITY;
+    public static int frequencyPenalty = ChatGPTConsant.DEFAULT_FREQUENCY_PENALTY;
+    public static int presencePenalty = ChatGPTConsant.DEFAULT_PRESENCE_PENALTY;
     public static String[] apiKeys;
-    public static String proxy;
+    public static String proxy = ProjectConstant.DEFAULT_PROXY;
 
     public static Path classMapPath;
+
+    public static Path testClassMapPath;
 
     public static ReentrantLock lock = new ReentrantLock();
 
@@ -125,6 +130,10 @@ public class Config {
 
     public static void setClassMapPath(Path classMapPath) {
         Config.classMapPath = classMapPath;
+    }
+
+    public static void setTestClassMapPath(Path testClassMapPath) {
+        Config.testClassMapPath = testClassMapPath;
     }
 
     public static String getRandomKey() {
