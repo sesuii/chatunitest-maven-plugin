@@ -30,7 +30,7 @@ public class ProjectParser {
     }
 
     /**
-     * Parse the project.
+     *
      */
     public void parse() {
         List<String> classPaths = new ArrayList<>();
@@ -82,7 +82,13 @@ public class ProjectParser {
             throw new RuntimeException("In ProjectParser.exportNameMap: " + e);
         }
     }
-
+    /**
+     * 递归扫描项目源代码目录下所有 java 文件
+     *
+     * @param directory 项目源代码目录
+     * @param classPaths 项目源代码目录下所有 java 文件的路径
+     * @return
+     */
     public void scanSourceDirectory(File directory, List<String> classPaths) {
         if (directory.isDirectory()) {
             File[] files = directory.listFiles();

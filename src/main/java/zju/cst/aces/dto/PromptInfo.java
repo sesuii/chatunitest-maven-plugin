@@ -1,4 +1,4 @@
-package zju.cst.aces.utils;
+package zju.cst.aces.dto;
 
 import lombok.Data;
 

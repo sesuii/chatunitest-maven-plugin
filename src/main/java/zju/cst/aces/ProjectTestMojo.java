@@ -109,31 +109,36 @@ public class ProjectTestMojo
         init();
         log.info("\n==========================\n[ChatTester] Generating tests for project " + project.getBasedir().getName() + " ...");
         log.warn("[ChatTester] It may consume a significant number of tokens!");
-
+        // ANNO 判断项目根目录是否存在
         Path srcMainJavaPath = Paths.get(project.getBasedir().getAbsolutePath(), "src", "main", "java");
         if (!srcMainJavaPath.toFile().exists()) {
             log.error("\n==========================\n[ChatTester] No compile source found in " + project);
             return;
         }
+        // ANNO parseOutput 为项目根目录下的 chatunitest-info 文件夹
         ProjectParser parser = new ProjectParser(srcMainJavaPath.toString(), parseOutput);
         if (! (new File(parseOutput).exists())) {
             log.info("\n==========================\n[ChatTester] Parsing class info ...");
             parser.parse();
             log.info("\n==========================\n[ChatTester] Parse finished");
         }
-
+        // ANNO 获取项目根目录下的所有 java 文件的路径
         List<String> classPaths = new ArrayList<>();
         parser.scanSourceDirectory(srcMainJavaPath.toFile(), classPaths);
 
+        // ANNO 如果测试目录下有文件，先备份到src.backup目录下，再删除测试目录下的文件
         TestCompiler.backupTestFolder();
+
         if (Config.enableMultithreading) {
             classJob(classPaths);
         } else {
             for (String classPath : classPaths) {
+                // ANNO 提取类名
                 String className = classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf("."));
                 try {
                     className = getFullClassName(className);
                     log.info("\n==========================\n[ChatTester] Generating tests for class < " + className + " > ...");
+                    // ANNO 生成测试用例，参数为全限定类名，class-info，测试输出路径
                     new ClassRunner(className, parseOutput, testOutput).start();
                 } catch (IOException e) {
                     log.error("[ChatTester] Generate tests for class " + className + " failed: " + e);
@@ -177,6 +182,9 @@ public class ProjectTestMojo
         executor.shutdown();
     }
 
+    /**
+     * 初始化
+     */
     public void init() {
         Config.setSession(session);
         Config.setProject(project);
@@ -211,6 +219,12 @@ public class ProjectTestMojo
         }
     }
 
+    /**
+     * 获取类的全限定名 例如：org.example.demo.Demo
+     *
+     * @param name 类名
+     * @return
+     */
     public String getFullClassName(String name) throws IOException {
         if (isFullName(name)) {
             return name;

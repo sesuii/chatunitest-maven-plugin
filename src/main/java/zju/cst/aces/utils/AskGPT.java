@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import okhttp3.*;
 import zju.cst.aces.ProjectTestMojo;
 import zju.cst.aces.config.Config;
+import zju.cst.aces.dto.Message;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -27,7 +28,7 @@ public class AskGPT extends ProjectTestMojo {
         setProxyStr();
         if(!hostname.equals("null") && !port.equals("-1")){
             setClinetwithProxy();
-        }else {
+        } else {
             setClinet();
         }
         String apiKey = Config.getRandomKey();
@@ -87,7 +88,6 @@ public class AskGPT extends ProjectTestMojo {
                 .build();
     }
     public static void setClinetwithProxy(){
-        //System.out.println("hostname:"+Config.hostName+" port:"+Config.port);
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(hostname, Integer.parseInt(port)));
         client=new OkHttpClient.Builder()
                 .connectTimeout(5, TimeUnit.MINUTES)
@@ -95,6 +95,5 @@ public class AskGPT extends ProjectTestMojo {
                 .readTimeout(5, TimeUnit.MINUTES)
                 .proxy(proxy)//自定义代理
                 .build();
-        //System.out.println("setClinet with proxy");
     }
 }

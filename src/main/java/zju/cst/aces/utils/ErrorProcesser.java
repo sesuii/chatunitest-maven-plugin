@@ -1,5 +1,6 @@
 package zju.cst.aces.utils;
 
+import zju.cst.aces.dto.TestMessage;
 import zju.cst.aces.parser.ErrorParser;
 
 import java.io.IOException;

@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import okhttp3.Response;
 import zju.cst.aces.ProjectTestMojo;
 import zju.cst.aces.config.Config;
+import zju.cst.aces.dto.Message;
+import zju.cst.aces.dto.PromptInfo;
 import zju.cst.aces.utils.*;
 
 import java.io.FileOutputStream;
@@ -29,6 +31,13 @@ public class AbstractRunner extends ProjectTestMojo {
     public String className;
     public String fullClassName;
 
+    /**
+     *
+     * @param fullClassname 全限定类名
+     * @param output 解析结果路径
+     * @param testPath 测试用例路径
+     * @return
+     */
     public AbstractRunner(String fullClassname, String output, String testPath) throws IOException {
         fullClassName = fullClassname;
         className = fullClassname.substring(fullClassname.lastIndexOf(".") + 1);
@@ -46,8 +55,14 @@ public class AbstractRunner extends ProjectTestMojo {
         return messages;
     }
 
+    /**
+     * if it's the round 1, generate the simple user prompt info,
+     * else generate the prompt info with error message.
+     * @param promptInfo ChatGPT user prompt info
+     * @return
+     */
     public String generateUserPrompt(PromptInfo promptInfo) throws IOException {
-        String user = null;
+        String user;
         if (promptInfo.errorMsg == null) {
             user = String.format("The focal method is `%s` in the focal class `%s`, and their information is\n```%s```",
                     promptInfo.methodSignature, promptInfo.className, promptInfo.info);
@@ -69,6 +84,7 @@ public class AbstractRunner extends ProjectTestMojo {
                     + TokenCounter.countMessageTokens(promptInfo.className)
                     + TokenCounter.countMessageTokens(promptInfo.info);
             int allowedTokens = Math.max(Config.maxPromptTokens - promptTokens, Config.minErrorTokens);
+            // ANNO if allowed tokens is less than 0, processedErrorMsg will be empty.
             String processedErrorMsg = ErrorProcesser.processErrorMessage(promptInfo.errorMsg, allowedTokens);
             log.debug("Allowed tokens: " + allowedTokens);
             log.debug("Processed error message: \n" + processedErrorMsg);

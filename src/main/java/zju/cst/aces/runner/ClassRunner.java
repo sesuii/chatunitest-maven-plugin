@@ -1,10 +1,10 @@
 package zju.cst.aces.runner;
 
 import zju.cst.aces.parser.ClassParser;
-import zju.cst.aces.utils.ClassInfo;
+import zju.cst.aces.dto.ClassInfo;
 import zju.cst.aces.config.Config;
-import zju.cst.aces.utils.MethodInfo;
-import zju.cst.aces.utils.PromptInfo;
+import zju.cst.aces.dto.MethodInfo;
+import zju.cst.aces.dto.PromptInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +18,14 @@ public class ClassRunner extends AbstractRunner {
     public ClassInfo classInfo;
     public File infoDir;
 
+    /**
+     * 提取类的信息
+     *
+     * @param fullClassName 全限定类名
+     * @param parsePath 解析结果路径
+     * @param testPath 测试用例路径
+     * @return
+     */
     public ClassRunner(String fullClassName, String parsePath, String testPath) throws IOException {
         super(fullClassName, parsePath, testPath);
         infoDir = new File(parseOutputPath + File.separator + fullClassName.replace(".", File.separator));
@@ -32,6 +40,7 @@ public class ClassRunner extends AbstractRunner {
         if (Config.enableMultithreading) {
             methodJob();
         } else {
+            // ANNO 提取出类中所有方法的信息
             for (String mSig : classInfo.methodSignatures.keySet()) {
                 MethodInfo methodInfo = getMethodInfo(classInfo, mSig);
                 if (methodInfo == null) {
@@ -75,6 +84,13 @@ public class ClassRunner extends AbstractRunner {
         executor.shutdown();
     }
 
+    /**
+     * generate prompt info of the target method without dependent methods
+     *
+     * @param classInfo current class info
+     * @param methodInfo current method info
+     * @return
+     */
     public PromptInfo generatePromptInfoWithoutDep(ClassInfo classInfo, MethodInfo methodInfo) {
         PromptInfo promptInfo = new PromptInfo(
                 false,
@@ -99,7 +115,13 @@ public class ClassRunner extends AbstractRunner {
 
         return promptInfo;
     }
-
+    /**
+     * generate prompt info of the target method with dependent methods
+     *
+     * @param classInfo current class info
+     * @param methodInfo current method info
+     * @return
+     */
     public PromptInfo generatePromptInfoWithDep(ClassInfo classInfo, MethodInfo methodInfo) throws IOException {
         PromptInfo promptInfo = new PromptInfo(
                 true,
@@ -154,6 +176,13 @@ public class ClassRunner extends AbstractRunner {
         return promptInfo;
     }
 
+    /**
+     * Get method info from parsed class info
+     *
+     * @param info class info
+     * @param mSig method signature
+     * @return
+     */
     public MethodInfo getMethodInfo(ClassInfo info, String mSig) throws IOException {
         String packagePath = info.packageDeclaration
                 .replace("package ", "")

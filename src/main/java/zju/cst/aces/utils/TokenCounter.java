@@ -4,6 +4,7 @@ import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.knuddels.jtokkit.api.EncodingRegistry;
 import zju.cst.aces.constant.ChatGPTConsant;
+import zju.cst.aces.dto.Message;
 
 import java.util.List;
 

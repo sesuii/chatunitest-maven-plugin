@@ -22,8 +22,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.ClassRunner;
 import zju.cst.aces.runner.MethodRunner;
-import zju.cst.aces.utils.ClassInfo;
-import zju.cst.aces.utils.MethodInfo;
+import zju.cst.aces.dto.ClassInfo;
+import zju.cst.aces.dto.MethodInfo;
 import zju.cst.aces.utils.TestCompiler;
 
 import java.io.File;
