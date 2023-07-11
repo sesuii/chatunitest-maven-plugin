@@ -19,10 +19,11 @@ import java.io.IOException;
 @Mojo(name = "estimate")
 public class EstimateMojo extends ProjectTestMojo {
 
-
-
     @Parameter(property = "selectClass", required = true)
     public String selectClass;
+
+    @Parameter(property = "isMergeInOne", defaultValue = "false")
+    public boolean isMergeInOne;
 
     public EstimateMojo() {
         super();
@@ -33,7 +34,7 @@ public class EstimateMojo extends ProjectTestMojo {
         init();
         TestClassMerger testClassMerger = new TestClassMerger(selectClass);
         try {
-            testClassMerger.mergeWithSuite();
+            testClassMerger.mergeInOneClass();
         } catch (IOException e) {
             log.info("merge failed");
             throw new RuntimeException(e);

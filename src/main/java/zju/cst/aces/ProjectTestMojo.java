@@ -240,7 +240,7 @@ public class ProjectTestMojo
      * @param name 类名
      * @return
      */
-    public String getFullClassName(String name) throws IOException {
+    public static String getFullClassName(String name) throws IOException {
         if (isFullName(name)) {
             return name;
         }
@@ -256,7 +256,7 @@ public class ProjectTestMojo
         return name;
     }
 
-    public boolean isFullName(String name) {
+    public static boolean isFullName(String name) {
         return name.contains(".");
     }
 }

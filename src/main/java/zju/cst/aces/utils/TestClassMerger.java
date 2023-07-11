@@ -1,6 +1,9 @@
 package zju.cst.aces.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import zju.cst.aces.config.Config;
+import zju.cst.aces.dto.ClassInfo;
 import zju.cst.aces.dto.MethodInfo;
 import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.AbstractRunner;
@@ -12,12 +15,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static zju.cst.aces.ProjectTestMojo.GSON;
+import static zju.cst.aces.ProjectTestMojo.getFullClassName;
 
 /**
- * Merge all test classes with different methods int the same class.
+ * Merge all test classes with different methods in the same class.
  * @author <a href="mailto: sjiahui27@gmail.com">songjiahui</a>
  * @since 2023/7/10 16:47
  **/
@@ -27,77 +28,200 @@ public class TestClassMerger {
     public static String parseTestOutput;
     private String sourceClassName;
 
-    private Set<String> importStatements;
+    private String sourceFullClassName;
 
-    private List<MethodInfo> methodInfos;
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private String targetClassName;
 
+    public Set<String> importStatements = new HashSet<>();
 
+    public String packageName;
+
+    public StringBuilder fieldsCode = new StringBuilder("\n");
+
+    public StringBuilder methodsCode = new StringBuilder("\n");
+
+    public StringBuilder beforeAllCode = new StringBuilder("\n");
+
+    public StringBuilder beforeEachCode = new StringBuilder("\n");
+
+    public StringBuilder afterAllCode = new StringBuilder("\n");
+
+    public StringBuilder afterEachCode = new StringBuilder("\n");
 
     public TestClassMerger(String className) {
         this.sourceClassName = className;
+        try {
+            this.sourceFullClassName = getFullClassName(className);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    /**
+     * merge by adding suite annotation, only Junit5 is supported now.
+     *
+     * @return true if the test class is merged successfully.
+     * @throws IOException
+     */
     public boolean mergeWithSuite() throws IOException {
-        if(!preProcessing()) {
-            return false;
-        }
-        Set<String> testClassFullNames = new HashSet<>();
+        preProcessing();
+        targetClassName = sourceClassName + "SuiteTest";
+        List<String> testClassFullNames = new ArrayList<>();
         Path testClassMapPath = Config.testClassMapPath;
         Map<String, List<String>> testClassMap = GSON.fromJson(Files.readString(testClassMapPath, StandardCharsets.UTF_8), Map.class);
-        if(testClassMap.containsKey(sourceClassName + "_suiteTest")) {
-            String filePath = testClassMap.get(sourceClassName + "_suiteTest").get(0).replace(".", File.separator) + ".java";
-            Path testSuitePath = Paths.get(Config.project.getBasedir().getAbsolutePath(), "src", "test", "java", filePath);
-            Files.deleteIfExists(testSuitePath);
-            testClassMap.remove(sourceClassName + "_suiteTest");
-        }
-        AtomicReference<String> packageName = new AtomicReference<>("");
         testClassMap.forEach((k, v) -> {
             if (k.startsWith(sourceClassName + "_")) {
                 testClassFullNames.add(v.get(0));
-                if (packageName.get().equals("")) {
-                    packageName.set("package " + v.get(0).substring(0, v.get(0).lastIndexOf(".")));
-                }
             }
         });
         if(testClassFullNames.size() == 0) {
             return false;
         }
+        packageName = "package " + testClassFullNames.get(0).substring(0, testClassFullNames.get(0).lastIndexOf(".")) + ";";
         StringBuilder codeBuilder = new StringBuilder();
-        codeBuilder.append(packageName.get())
-                .append(";\n\n")
+        codeBuilder.append(packageName)
+                .append("\n\n")
                 .append("import org.junit.platform.suite.api.SelectClasses;\n" +
                         "import org.junit.platform.suite.api.Suite;\n\n")
                 .append("@Suite\n@SelectClasses({\n");
         testClassFullNames.forEach(testClass ->{
             codeBuilder.append("    ").append(testClass).append(".class,\n");
         });
-        codeBuilder.append("})\npublic class ").append(sourceClassName).append("_suiteTest {\n\n}");
+        codeBuilder.append("})\npublic class ").append(sourceClassName).append("SuiteTest {\n\n}");
+        deleteRepeatTestFile(Collections.singletonList(targetClassName));
+        return export(String.valueOf(codeBuilder));
+    }
+
+    /**
+     * merge all test classes with different methods in the same class.
+     *
+     * @return true if merge successfully, false otherwise.
+     */
+    public boolean mergeInOneClass() throws IOException {
+        ProjectParser parser = preProcessing();
+        List<String> fieldNameToDelete = new ArrayList<>();
+        targetClassName = sourceClassName + "_test";
         Path srcTestJavaPath = Paths.get(Config.project.getBasedir().getAbsolutePath(), "src", "test", "java");
-        Path savePath = srcTestJavaPath.resolve(packageName.get().replace("package ", "")
-                .replace(".", File.separator))
-                .resolve(sourceClassName + "_suiteTest.java");
-        AbstractRunner.exportTest(codeBuilder.toString(), savePath);
-        return true;
+        List<String> classPaths = new ArrayList<>();
+        parser.scanSourceDirectory(srcTestJavaPath.toFile(), classPaths);
+        classPaths.forEach(classPath -> {
+            String className = classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf("."));
+            if(className.startsWith(sourceClassName + "_")) {
+                try {
+                    File classDir  =  new File(parseTestOutput + File.separator +
+                            sourceFullClassName.substring(0, sourceFullClassName.lastIndexOf("."))
+                                    .replace(".", File.separator) + File.separator + className);
+                    File classInfoFile =  new File(classDir + File.separator + "class.json");
+                    ClassInfo classInfo = GSON.fromJson(Files.readString(classInfoFile.toPath(), StandardCharsets.UTF_8), ClassInfo.class);
+                    importStatements.addAll(classInfo.imports);
+                    fieldNameToDelete.add(classInfo.className);
+                    extractFieldsAndMethods(classInfo, classDir);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        deleteRepeatTestFile(fieldNameToDelete);
+        return mergeCodeSnippets();
     }
 
-    public boolean mergeInOneClass() {
-        if(!preProcessing()) {
-            return false;
+    private void extractFieldsAndMethods(ClassInfo classInfo, File classDir) throws IOException {
+        List<MethodInfo> methodInfos = new ArrayList<>();
+        for(String mSigIdx: classInfo.methodSignatures.values()) {
+            File methodFile = new File(classDir + File.separator + mSigIdx + ".json");
+            MethodInfo methodInfo =  GSON.fromJson(Files.readString(methodFile.toPath(), StandardCharsets.UTF_8), MethodInfo.class);
+            methodInfos.add(methodInfo);
         }
-        // TODO
-        //  1. 生成 testclass-info.json
-        //  2. 从 testclass-info.json 中读取信息
-        //  3. 合并 import 语句、合并 setUp 和 tearDown 方法
-        //  4. 合并所有 method
-        //  5. 组合生成新的 test class
-        //  6. 编译运行
-        return false;
+        packageName = classInfo.packageDeclaration;
+        String className = classInfo.className;
+        classInfo.fields.forEach(line -> {
+            String front = line.substring(0, line.indexOf("=")).trim();
+            String variableName = front.substring(front.lastIndexOf(" ") + 1);
+            String replacedName = className.substring(className.indexOf("_") + 1, className.lastIndexOf("_")) + "_" + variableName;
+            fieldsCode.append(line.replace(variableName, replacedName));
+            fieldsCode.append("\n");
+            methodInfos.forEach(methodInfo -> {
+                methodInfo.sourceCode = methodInfo.sourceCode.replace(" " + variableName + " ", " " + replacedName + " ");
+            });
+        });
+        methodInfos.forEach(methodInfo -> {
+            if(methodInfo.sourceCode.contains("@Test")) {
+                methodsCode.append("    ").append(methodInfo.sourceCode).append("\n\n");
+            }
+            else if(methodInfo.sourceCode.contains("@AfterAll")) {
+                extractMethodBody(methodInfo.sourceCode, afterAllCode);
+            }
+            else if(methodInfo.sourceCode.contains("@BeforeEach")) {
+                extractMethodBody(methodInfo.sourceCode, beforeEachCode);
+            }
+            else if(methodInfo.sourceCode.contains("@AfterEach")) {
+                extractMethodBody(methodInfo.sourceCode, afterEachCode);
+            }
+            else if(methodInfo.sourceCode.contains("@BeforeAll")) {
+                extractMethodBody(methodInfo.sourceCode, beforeAllCode);
+            }
+        });
     }
 
-    public boolean preProcessing() {
+    private void extractMethodBody(String sourceCode, StringBuilder body) {
+        body.append(sourceCode, sourceCode.indexOf("{") + 1, sourceCode.lastIndexOf("}\n"));
+    }
+
+    private boolean mergeCodeSnippets() {
+        StringBuilder code = new StringBuilder();
+        code.append("\n").append(packageName).append("\n\n");
+        importStatements.forEach(importStatement -> code.append(importStatement).append("\n"));
+        extractSetUpAndTearDown();
+        code.append("\n\npublic class ")
+                .append(targetClassName).append(" {\n\n")
+                .append(fieldsCode).append("\n\n")
+                .append(beforeAllCode)
+                .append(beforeEachCode)
+                .append(methodsCode)
+                .append(afterAllCode)
+                .append(afterEachCode).append("\n\n}");
+        deleteRepeatTestFile(Collections.singletonList(targetClassName));
+        return export(String.valueOf(code));
+    }
+
+    private void extractSetUpAndTearDown() {
+        if(beforeAllCode.length() > 1) {
+            beforeAllCode.insert(0, "@BeforeAll\npublic static void setUpBeforeClass() throws Exception {\n");
+            beforeAllCode.append("\n}\n");
+        }
+        if(beforeEachCode.length() > 1) {
+            beforeEachCode.insert(0, "@BeforeEach\npublic void setUp() throws Exception {\n");
+            beforeEachCode.append("\n}\n");
+        }
+        if(afterAllCode.length() > 1) {
+            afterAllCode.insert(0, "@AfterAll\npublic static void tearDownAfterClass() throws Exception {\n");
+            afterAllCode.append("\n}\n");
+        }
+        if(afterEachCode.length() > 1) {
+            afterEachCode.insert(0, "@AfterEach\npublic void tearDown() throws Exception {\n");
+            afterEachCode.append("\n}\n");
+        }
+    }
+
+    private void deleteRepeatTestFile(List<String> classNameToDel) {
+        Path srcTestJavaPath = Paths.get(Config.project.getBasedir().getAbsolutePath(), "src", "test", "java");
+        List<String> classPaths = new ArrayList<>();
+        ProjectParser parser = new ProjectParser(srcTestJavaPath.toString(), parseTestOutput);
+        parser.scanSourceDirectory(srcTestJavaPath.toFile(), classPaths);
+        classPaths.forEach(classPath -> {
+            String className = classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf("."));
+            if(classNameToDel.contains(className)) {
+                File classFile = new File(classPath);
+                classFile.delete();
+            }
+        });
+    }
+
+    public ProjectParser preProcessing() {
         Path srcTestJavaPath = Paths.get(Config.project.getBasedir().getAbsolutePath(), "src", "test", "java");
         if(!srcTestJavaPath.toFile().exists()) {
-            return false;
+            return null;
         }
         tmpTestOutput = String.valueOf(Paths.get(tmpTestOutput, Config.project.getArtifactId()));
         parseTestOutput = tmpTestOutput + File.separator + "test-class-info";
@@ -105,6 +229,16 @@ public class TestClassMerger {
         Config.setTestClassMapPath(Paths.get(parseTestOutput, "class-map.json"));
         ProjectParser parser = new ProjectParser(srcTestJavaPath.toString(), parseTestOutput);
         parser.parse();
+        return parser;
+    }
+
+    public boolean export(String code) {
+        Path srcTestJavaPath = Paths.get(Config.project.getBasedir().getAbsolutePath(), "src", "test", "java");
+        Path savePath = srcTestJavaPath.resolve(packageName.replace("package ", "")
+                        .replace(";", "")
+                        .replace(".", File.separator))
+                .resolve(targetClassName + ".java");
+        AbstractRunner.exportTest(code, savePath);
         return true;
     }
 

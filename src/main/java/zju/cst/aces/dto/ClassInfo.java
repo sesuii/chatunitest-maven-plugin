@@ -18,6 +18,9 @@ public class ClassInfo {
     public List<String> getterSetters;
     public Map<String, Set<String>> constructorDeps;
 
+    public ClassInfo() {
+    }
+
     public ClassInfo(String className, String packageDeclaration, String classSignature, List<String> imports,
                      List<String> fields, List<String> superClasses, Map<String, String> methodSignatures,
                      List<String> briefMethods, boolean hasConstructor, List<String> constructors,
