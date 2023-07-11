@@ -40,7 +40,6 @@ public class ClassRunner extends AbstractRunner {
         if (Config.enableMultithreading) {
             methodJob();
         } else {
-            // ANNO 提取出类中所有方法的信息
             for (String mSig : classInfo.methodSignatures.keySet()) {
                 MethodInfo methodInfo = getMethodInfo(classInfo, mSig);
                 if (methodInfo == null) {

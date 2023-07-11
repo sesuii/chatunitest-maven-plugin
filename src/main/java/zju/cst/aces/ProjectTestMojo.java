@@ -89,6 +89,9 @@ public class ProjectTestMojo
     @Parameter(name = "proxy",defaultValue = "null:-1")
     public String proxy;
 
+    @Parameter(property = "mergeInOneClass", defaultValue = "true")
+    public boolean mergeInOneClass;
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     @Component(hint = "default")
     public DependencyGraphBuilder dependencyGraphBuilder;

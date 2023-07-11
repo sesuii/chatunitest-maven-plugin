@@ -40,9 +40,6 @@ public class ClassTestMojo
     @Parameter(property = "selectClass", required = true)
     public String selectClass;
 
-    @Parameter(property = "mergeInOneClass", defaultValue = "false")
-    public boolean mergeInOneClass;
-
     public ClassTestMojo() {
         super();
     }

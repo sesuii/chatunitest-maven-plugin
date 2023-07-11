@@ -85,7 +85,6 @@ public class AbstractRunner extends ProjectTestMojo {
                     + TokenCounter.countMessageTokens(promptInfo.className)
                     + TokenCounter.countMessageTokens(promptInfo.info);
             int allowedTokens = Math.max(Config.maxPromptTokens - promptTokens, Config.minErrorTokens);
-            // ANNO if allowed tokens is less than 0, processedErrorMsg will be empty.
             String processedErrorMsg = ErrorProcesser.processErrorMessage(promptInfo.errorMsg, allowedTokens);
             log.debug("Allowed tokens: " + allowedTokens);
             log.debug("Processed error message: \n" + processedErrorMsg);

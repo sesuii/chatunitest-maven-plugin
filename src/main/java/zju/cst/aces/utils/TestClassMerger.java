@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import zju.cst.aces.config.Config;
 import zju.cst.aces.dto.ClassInfo;
 import zju.cst.aces.dto.MethodInfo;
+import zju.cst.aces.parser.ClassParser;
 import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.AbstractRunner;
 
@@ -100,6 +101,9 @@ public class TestClassMerger {
      */
     public boolean mergeInOneClass() throws IOException {
         ProjectParser parser = preProcessing();
+        if(parser == null) {
+            return false;
+        }
         List<String> fieldNameToDelete = new ArrayList<>();
         targetClassName = sourceClassName + "_test";
         Path srcTestJavaPath = Paths.get(Config.project.getBasedir().getAbsolutePath(), "src", "test", "java");
@@ -135,16 +139,26 @@ public class TestClassMerger {
         }
         packageName = classInfo.packageDeclaration;
         String className = classInfo.className;
-        classInfo.fields.forEach(line -> {
-            String front = line.substring(0, line.indexOf("=")).trim();
-            String variableName = front.substring(front.lastIndexOf(" ") + 1);
-            String replacedName = className.substring(className.indexOf("_") + 1, className.lastIndexOf("_")) + "_" + variableName;
-            fieldsCode.append(line.replace(variableName, replacedName));
-            fieldsCode.append("\n");
-            methodInfos.forEach(methodInfo -> {
-                methodInfo.sourceCode = methodInfo.sourceCode.replace(" " + variableName + " ", " " + replacedName + " ");
+        if(!classInfo.fields.isEmpty()) {
+            classInfo.fields.forEach(line -> {
+                String variableName;
+                if(line.contains("=")) {
+                    // field with initialization
+                    String front = line.substring(0, line.indexOf("=")).trim();
+                    variableName = front.substring(front.lastIndexOf(" ") + 1);
+                }
+                else {
+                    // field without initialization
+                    variableName = line.substring(line.lastIndexOf(" ") + 1, line.length() - 1);
+                }
+                String replacedName = className.substring(className.indexOf("_") + 1, className.lastIndexOf("_")) + "_" + variableName;
+                fieldsCode.append(line.replace(variableName, replacedName));
+                fieldsCode.append("\n");
+                methodInfos.forEach(methodInfo -> {
+                    methodInfo.sourceCode = ClassParser.renameVariable(methodInfo.sourceCode, variableName, replacedName);
+                });
             });
-        });
+        }
         methodInfos.forEach(methodInfo -> {
             if(methodInfo.sourceCode.contains("@Test")) {
                 methodsCode.append("    ").append(methodInfo.sourceCode).append("\n\n");
@@ -174,8 +188,8 @@ public class TestClassMerger {
         importStatements.forEach(importStatement -> code.append(importStatement).append("\n"));
         extractSetUpAndTearDown();
         code.append("\n\npublic class ")
-                .append(targetClassName).append(" {\n\n")
-                .append(fieldsCode).append("\n\n")
+                .append(targetClassName).append(" {")
+                .append(fieldsCode)
                 .append(beforeAllCode)
                 .append(beforeEachCode)
                 .append(methodsCode)

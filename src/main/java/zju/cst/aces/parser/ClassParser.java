@@ -10,6 +10,7 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
@@ -487,6 +488,18 @@ public class ClassParser {
     public static Path getFilePathBySig(String mSig, ClassInfo info) {
         Map<String, String> mSigs = info.methodSignatures;
         return Paths.get(mSigs.get(mSig) + ".json");
+    }
+
+    public static String renameVariable(String code, String oldName, String newName) {
+        ParseResult<CompilationUnit> parseResult = parser.parse(code);
+        CompilationUnit cu = parseResult.getResult().orElseThrow();
+        cu.findAll(VariableDeclarator.class).forEach(variable -> {
+            SimpleName name = variable.getName();
+            if(name.getIdentifier().equals(oldName)) {
+                name.setIdentifier(newName);
+            }
+        });
+        return cu.toString();
     }
 
     private List<Path> getSources() {
