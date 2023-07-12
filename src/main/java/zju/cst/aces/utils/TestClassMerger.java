@@ -152,35 +152,35 @@ public class TestClassMerger {
                     variableName = line.substring(line.lastIndexOf(" ") + 1, line.length() - 1);
                 }
                 String replacedName = className.substring(className.indexOf("_") + 1, className.lastIndexOf("_")) + "_" + variableName;
-                fieldsCode.append(line.replace(variableName, replacedName));
-                fieldsCode.append("\n");
+                fieldsCode.append("    ").append(line.replace(variableName, replacedName)).append("\n");
                 methodInfos.forEach(methodInfo -> {
-                    methodInfo.sourceCode = ClassParser.renameVariable(methodInfo.sourceCode, variableName, replacedName);
+                    if(methodInfo.sourceCode.contains(variableName)) {
+                        methodInfo.sourceCode = ClassParser.renameVariable(methodInfo.sourceCode, variableName, replacedName);
+                    }
                 });
             });
         }
         methodInfos.forEach(methodInfo -> {
-            if(methodInfo.sourceCode.contains("@Test")) {
+            String sourceCode = methodInfo.sourceCode;
+            String brief = methodInfo.brief;
+            if(brief.contains("@Test")) {
                 methodsCode.append("    ").append(methodInfo.sourceCode).append("\n\n");
             }
-            else if(methodInfo.sourceCode.contains("@AfterAll")) {
-                extractMethodBody(methodInfo.sourceCode, afterAllCode);
-            }
-            else if(methodInfo.sourceCode.contains("@BeforeEach")) {
-                extractMethodBody(methodInfo.sourceCode, beforeEachCode);
-            }
-            else if(methodInfo.sourceCode.contains("@AfterEach")) {
-                extractMethodBody(methodInfo.sourceCode, afterEachCode);
-            }
-            else if(methodInfo.sourceCode.contains("@BeforeAll")) {
-                extractMethodBody(methodInfo.sourceCode, beforeAllCode);
+            else {
+                sourceCode = sourceCode.substring(sourceCode.indexOf("{") + 1, sourceCode.lastIndexOf("}")).trim();
+                if (brief.contains("@BeforeAll")) {
+                    beforeAllCode.append("\t\t").append(sourceCode).append("\n");
+                } else if (brief.contains("@BeforeEach")) {
+                    beforeEachCode.append("\t\t").append(sourceCode).append("\n");
+                } else if (brief.contains("@AfterAll")) {
+                    afterAllCode.append("\t\t").append(sourceCode).append("\n");
+                } else if (brief.contains("@AfterEach")) {
+                    afterEachCode.append("\t\t").append(sourceCode).append("\n");
+                }
             }
         });
     }
 
-    private void extractMethodBody(String sourceCode, StringBuilder body) {
-        body.append(sourceCode, sourceCode.indexOf("{") + 1, sourceCode.lastIndexOf("}\n"));
-    }
 
     private boolean mergeCodeSnippets() {
         StringBuilder code = new StringBuilder();
@@ -201,20 +201,20 @@ public class TestClassMerger {
 
     private void extractSetUpAndTearDown() {
         if(beforeAllCode.length() > 1) {
-            beforeAllCode.insert(0, "@BeforeAll\npublic static void setUpBeforeClass() throws Exception {\n");
-            beforeAllCode.append("\n}\n");
+            beforeAllCode.insert(0, "    @BeforeAll\n    public static void setUpBeforeClass() throws Exception {\n");
+            beforeAllCode.append("\n    }\n");
         }
         if(beforeEachCode.length() > 1) {
-            beforeEachCode.insert(0, "@BeforeEach\npublic void setUp() throws Exception {\n");
-            beforeEachCode.append("\n}\n");
+            beforeEachCode.insert(0, "    @BeforeEach\n    public void setUp() throws Exception {\n");
+            beforeEachCode.append("\n    }\n");
         }
         if(afterAllCode.length() > 1) {
-            afterAllCode.insert(0, "@AfterAll\npublic static void tearDownAfterClass() throws Exception {\n");
-            afterAllCode.append("\n}\n");
+            afterAllCode.insert(0, "    @AfterAll\n    public static void tearDownAfterClass() throws Exception {\n");
+            afterAllCode.append("\n    }\n");
         }
         if(afterEachCode.length() > 1) {
-            afterEachCode.insert(0, "@AfterEach\npublic void tearDown() throws Exception {\n");
-            afterEachCode.append("\n}\n");
+            afterEachCode.insert(0, "    @AfterEach\n    public void tearDown() throws Exception {\n");
+            afterEachCode.append("\n    }\n");
         }
     }
 

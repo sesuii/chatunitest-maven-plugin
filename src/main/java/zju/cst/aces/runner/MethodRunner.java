@@ -87,14 +87,7 @@ public class MethodRunner extends ClassRunner {
             }
             List<Message> prompt = generateMessages(promptInfo);
             int tokenCount = TokenCounter.countMessageTokens(prompt);
-            log.info("The estimated tokens in this round:" + tokenCount);
-            log.info("Do you want to continue? (Y/N)");
-            Scanner scanner = new Scanner(System.in);
-            String userInput = scanner.nextLine();
-            if(!"Y".equals(userInput)) {
-                log.info("Test for method < " + methodInfo.methodName + " > generated terminated by user.");
-                return true;
-            }
+            log.info("The estimated tokens of prompt in this round:" + tokenCount);
             AskGPT askGPT = new AskGPT();
             Response response = askGPT.askChatGPT(prompt);
             Path savePath = testOutputPath.resolve(classInfo.packageDeclaration

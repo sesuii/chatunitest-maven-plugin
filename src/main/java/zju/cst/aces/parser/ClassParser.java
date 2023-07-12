@@ -7,11 +7,10 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration;
+import com.github.javaparser.printer.configuration.PrettyPrinterConfiguration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
@@ -491,15 +490,16 @@ public class ClassParser {
     }
 
     public static String renameVariable(String code, String oldName, String newName) {
-        ParseResult<CompilationUnit> parseResult = parser.parse(code);
+        String dummyCode = "class DummyClass {\n" + code + "}";
+        ParseResult<CompilationUnit> parseResult = parser.parse(dummyCode);
         CompilationUnit cu = parseResult.getResult().orElseThrow();
-        cu.findAll(VariableDeclarator.class).forEach(variable -> {
-            SimpleName name = variable.getName();
-            if(name.getIdentifier().equals(oldName)) {
-                name.setIdentifier(newName);
-            }
+        cu.findAll(MethodDeclaration.class).stream().forEach(method -> {
+            method.findAll(NameExpr.class).stream().filter(nameExpr -> nameExpr.getNameAsString().equals(oldName)).forEach(nameExpr -> {
+                nameExpr.setName(newName);
+            });
         });
-        return cu.toString();
+        code = cu.findRootNode().toString(new DefaultPrinterConfiguration());
+        return code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"));
     }
 
     private List<Path> getSources() {
