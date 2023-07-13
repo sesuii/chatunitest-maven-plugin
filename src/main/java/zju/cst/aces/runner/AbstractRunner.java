@@ -140,6 +140,7 @@ public class AbstractRunner extends ProjectTestMojo {
         }
         Map<String, Object> body = GSON.fromJson(response.body().charStream(), Map.class);
         String content = ((Map<String, String>) ((Map<String, Object>) ((ArrayList<?>) body.get("choices")).get(0)).get("message")).get("content");
+        totalTokensObserver.update(TokenCounter.countMessageTokens(content));
         return extractCode(content);
     }
 

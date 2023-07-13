@@ -41,6 +41,11 @@ public class ProjectConstant {
     public static final int DEFAULT_MAX_PROMPT_TOKENS = 2600;
 
     /**
+     * Default max total tokens.
+     */
+    public static final int DEFAULT_MAX_TOTAL_TOKENS = 40960;
+
+    /**
      * Default min Error tokens.
      */
     public static final int DEFAULT_MIN_ERROR_TOKENS = 500;

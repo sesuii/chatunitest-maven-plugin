@@ -18,6 +18,12 @@ public class TokenCounter {
 
     private static final EncodingRegistry REGISTRY = Encodings.newDefaultEncodingRegistry();
 
+    /**
+     * count the tokens of a message
+     * every message follows <|start|>{role/name}\n{content}<|end|>\n
+     * @param message
+     * @return
+     */
     public static int countMessageTokens(Message message) {
         Encoding encoding = REGISTRY.getEncodingForModel(ChatGPTConsant.DEFAULT_GPT_MODEL).orElseThrow();
         int tokensSum = 0;

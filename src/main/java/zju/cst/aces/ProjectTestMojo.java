@@ -31,6 +31,7 @@ import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.ClassRunner;
 import zju.cst.aces.config.Config;
 import zju.cst.aces.utils.TestCompiler;
+import zju.cst.aces.utils.TotalTokensObserver;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +101,8 @@ public class ProjectTestMojo
     public static int classThreads;
     public static int methodThreads;
     protected boolean isMavenDirect;
+
+    public static TotalTokensObserver totalTokensObserver;
 
 
 
@@ -221,6 +224,7 @@ public class ProjectTestMojo
         Config.setFrequencyPenalty(frequencyPenalty);
         Config.setPresencePenalty(presencePenalty);
         Config.setProxy(proxy);
+        totalTokensObserver = new TotalTokensObserver(log);
         tmpOutput = String.valueOf(Paths.get(tmpOutput, project.getArtifactId()));
         parseOutput = tmpOutput + File.separator + "class-info";
         parseOutput = parseOutput.replace("/", File.separator);
